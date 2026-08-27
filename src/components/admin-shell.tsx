@@ -7,8 +7,8 @@ import { Icon, type IconName } from "./icons";
 import { firebaseAuth } from "@/lib/firebase/client";
 
 const groups:{label:string;icon:IconName;href:string;children:{label:string;href:string}[]}[]=[
-  {label:"顧客管理",icon:"users",href:"/line/users",children:[{label:"顧客一覧",href:"/line/users"},{label:"アンケート",href:"/line/surveys"},{label:"セグメント",href:"/line/segments"}]},
-  {label:"配信",icon:"send",href:"/line/broadcasts",children:[{label:"配信一覧",href:"/line/broadcasts"},{label:"配信を作成",href:"/line/broadcasts/composer"},{label:"テンプレート",href:"/line/broadcasts#templates"}]},
+  {label:"顧客管理",icon:"users",href:"/line/users",children:[{label:"顧客一覧",href:"/line/users"},{label:"セグメント",href:"/line/segments"}]},
+  {label:"配信",icon:"send",href:"/line/broadcasts",children:[{label:"配信一覧",href:"/line/broadcasts"},{label:"配信を作成",href:"/line/broadcasts/composer"},{label:"アンケート",href:"/line/surveys"},{label:"テンプレート",href:"/line/broadcasts#templates"}]},
   {label:"分析",icon:"chart",href:"/line/analytics",children:[{label:"全体分析",href:"/line/analytics"},{label:"配信分析",href:"/line/analytics#broadcasts"}]},
 ];
 export function AdminShell({children}:{children:ReactNode}){

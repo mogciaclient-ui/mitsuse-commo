@@ -114,8 +114,8 @@ function targetLabel(target: string) {
   return "確認できるLINE友だち全員";
 }
 
-const composeInstructions = "あなたは『いいもの三瀬』のLINE配信担当です。高齢のお客様にも読みやすい、やさしく簡潔な日本語で配信文を1案作成してください。事実や特典を創作せず、入力にない価格・期限・URLを加えないでください。絵文字は0〜2個、本文は250文字以内にしてください。";
+const composeInstructions = "あなたは『いいもの三瀬』のLINE配信担当です。入力された内容をもとに、そのまま配信できる自然な日本語の本文を1案だけ作成してください。高齢のお客様にも伝わる短い文にし、同じお願いや挨拶を繰り返さないでください。大げさな表現や回りくどい説明を避け、特典の条件が一読で分かるようにしてください。事実や特典を創作せず、入力にない価格・期限・URL・商品説明を加えないでください。絵文字は0〜1個、本文は160文字以内にしてください。";
 const analysisInstructions = "あなたは『いいもの三瀬』の販促分析担当です。渡された集計データとお客様の自由記述だけを根拠に、経営者がすぐ理解できる簡潔な日本語で分析してください。自由記述から共通する要望や好意的・改善を求める傾向を要約してください。個別コメントを長く転載せず、因果関係を断定せず、データが少ない場合はその旨を明記してください。個人の特定やセンシティブな推測はしないでください。";
 
-const composeSchema = { type: "json_schema", name: "line_message", strict: true, schema: { type: "object", properties: { message: { type: "string" }, note: { type: "string" } }, required: ["message", "note"], additionalProperties: false } };
+const composeSchema = { type: "json_schema", name: "line_message", strict: true, schema: { type: "object", properties: { message: { type: "string" } }, required: ["message"], additionalProperties: false } };
 const analysisSchema = { type: "json_schema", name: "business_analysis", strict: true, schema: { type: "object", properties: { summary: { type: "string" }, insights: { type: "array", items: { type: "object", properties: { title: { type: "string" }, detail: { type: "string" } }, required: ["title", "detail"], additionalProperties: false } }, actions: { type: "array", items: { type: "object", properties: { title: { type: "string" }, detail: { type: "string" } }, required: ["title", "detail"], additionalProperties: false } } }, required: ["summary", "insights", "actions"], additionalProperties: false } };

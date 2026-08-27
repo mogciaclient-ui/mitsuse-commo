@@ -6,6 +6,7 @@ import { firebaseAuth, firestore } from "@/lib/firebase/client";
 import { SurveyOverview } from "@/components/survey-overview";
 import { SurveyCatalog } from "@/components/survey-catalog";
 import { CouponSettings } from "@/components/coupon-settings";
+import { SegmentsDashboard } from "@/components/segments-dashboard";
 import styles from "./line-admin-pages.module.css";
 
 type Response = { id: string; lineUserId?: string; lineDisplayName?: string; storeGroup?: string; store?: string; birthDate?: string; message?: string; createdAt?: Timestamp | null };
@@ -58,13 +59,13 @@ function Surveys() {
 }
 
 function Segments() {
-  const { responses, users } = useAdminData(); const answered = new Set(responses.map(r => r.lineUserId).filter(Boolean)); const active = users.filter(u => u.followed !== false); const nowMonth = new Date().getMonth() + 1;
-  const values = [{ name: "アンケート回答済み", count: answered.size, text: "回答内容を使ったご案内ができます" }, { name: "アンケート未回答", count: active.filter(u => !answered.has(u.lineUserId || u.id)).length, text: "アンケートへの回答を促す対象です" }, { name: "今月がお誕生日", count: responses.filter(r => Number(r.birthDate?.slice(5, 7)) === nowMonth).length, text: "誕生日のお知らせに利用できます" }, { name: "現在確認できる友だち", count: active.length, text: "Webhookで確認できたユーザーです" }];
-  return <div className={styles.stack}><Header title="セグメント" description="顧客を条件ごとに分けて確認できます。" /><div className={styles.segments}>{values.map(item => <article className={`card ${styles.segment}`} key={item.name}><span>{item.name}</span><strong>{item.count.toLocaleString("ja-JP")}人</strong><p>{item.text}</p></article>)}</div></div>;
+  const { responses, users } = useAdminData();
+  return <div className={styles.stack}><Header title="セグメント" description="顧客を条件ごとに分けて、配信対象を見つけられます。" /><SegmentsDashboard responses={responses} users={users} /></div>;
 }
 
 function Broadcasts({ composer = false }: { composer?: boolean }) {
   const { broadcasts } = useAdminData(true); const [target, setTarget] = useState("all"); const [message, setMessage] = useState(""); const [sending, setSending] = useState(false); const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+  useEffect(() => { const selected = new URLSearchParams(window.location.search).get("target"); if (selected === "answered" || selected === "unanswered") setTarget(selected); }, []);
   async function send() { if (!message.trim() || !window.confirm("選択した顧客へ、このメッセージを配信します。よろしいですか？")) return; const user = firebaseAuth?.currentUser; if (!user) return; setSending(true); setResult(null); try { const token = await user.getIdToken(); const response = await fetch("/api/line/broadcasts", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ target, message }) }); const body = await response.json(); if (!response.ok) throw new Error(body.error); setResult({ ok: true, text: `${body.recipientCount}人へ配信しました。` }); setMessage(""); } catch (cause) { setResult({ ok: false, text: cause instanceof Error ? cause.message : "配信に失敗しました。" }); } finally { setSending(false); } }
   if (composer) return <div className={styles.stack}><Header title="新しい配信" description="対象とメッセージを設定してLINEへ配信します。" /><section className={`card ${styles.panel}`}><div className={styles.composer}><label>配信対象<select className={styles.select} value={target} onChange={e => setTarget(e.target.value)}><option value="all">確認できる友だち全員</option><option value="answered">アンケート回答済み</option><option value="unanswered">アンケート未回答</option></select></label><label>メッセージ<textarea className={styles.textarea} value={message} onChange={e => setMessage(e.target.value)} maxLength={5000} placeholder="配信するメッセージを入力" /></label>{result ? <p className={result.ok ? styles.success : styles.error}>{result.text}</p> : null}<button className={styles.button} disabled={sending || !message.trim()} onClick={send}>{sending ? "配信しています…" : "確認して配信する"}</button></div></section></div>;
   return <div className={styles.stack}><header className="page-head"><div><h1>配信一覧</h1><p>これまでのLINE配信を確認できます。</p></div><a className="primary" href="/line/broadcasts/composer">新しい配信</a></header><section className={`card ${styles.panel}`}><div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>配信日時</th><th>対象</th><th>人数</th><th>状態</th><th>内容</th></tr></thead><tbody>{broadcasts.map(item => <tr key={item.id}><td>{date(item.sentAt || item.createdAt)}</td><td>{targetLabel(item.target)}</td><td>{item.recipientCount ?? 0}人</td><td>{item.status === "sent" ? "配信済み" : item.status === "failed" ? "失敗" : "処理中"}</td><td className={styles.message}>{item.message}</td></tr>)}</tbody></table>{!broadcasts.length ? <p className={styles.empty}>配信履歴はまだありません。</p> : null}</div></section></div>;

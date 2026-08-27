@@ -2,7 +2,6 @@
 
 import { collection, onSnapshot, orderBy, query, type Timestamp } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
-import { Icon } from "@/components/icons";
 import { SegmentsDashboard } from "@/components/segments-dashboard";
 import { firestore } from "@/lib/firebase/client";
 import styles from "./customer-workspace.module.css";
@@ -40,7 +39,7 @@ export default function LineUsersPage() {
 
   function changeView(next: typeof view) { setView(next); window.history.replaceState(null, "", next === "customers" ? "/line/users" : `/line/users?view=${next}`); }
 
-  return <div className="customers-page"><header className="page-head"><div><h1>顧客・アンケート</h1><p>顧客情報、アンケート回答、配信セグメントをまとめて確認できます。</p></div><span className="data-pill"><Icon name="users" />登録顧客：{allCustomers.length.toLocaleString("ja-JP")}人</span></header><nav className={styles.tabs}><button className={view === "customers" ? styles.active : ""} onClick={() => changeView("customers")}>顧客一覧</button><button className={view === "responses" ? styles.active : ""} onClick={() => changeView("responses")}>アンケート回答 <span>{responses.length}</span></button><button className={view === "segments" ? styles.active : ""} onClick={() => changeView("segments")}>セグメント配信</button></nav>{view === "customers" ? <section className="card customer-panel">
+  return <div className="customers-page"><header className="page-head"><div><h1>顧客・アンケート</h1><p>顧客情報、アンケート回答、配信セグメントをまとめて確認できます。</p></div></header><nav className={styles.tabs}><button className={view === "customers" ? styles.active : ""} onClick={() => changeView("customers")}>顧客一覧</button><button className={view === "responses" ? styles.active : ""} onClick={() => changeView("responses")}>アンケート回答 <span>{responses.length}</span></button><button className={view === "segments" ? styles.active : ""} onClick={() => changeView("segments")}>セグメント配信</button></nav>{view === "customers" ? <section className="card customer-panel">
     <div className="customer-toolbar"><label className="customer-search"><span>顧客を検索</span><input value={keyword} onChange={event => setKeyword(event.target.value)} placeholder="LINE表示名で検索" type="search" /></label><span className="customer-result">{customers.length.toLocaleString("ja-JP")}人を表示</span></div>
     {loading ? <p className="dashboard-status customer-status">顧客データを読み込んでいます…</p> : null}{error ? <p className="dashboard-error" role="alert">{error}</p> : null}
     {!loading && !error ? <div className="customer-table-wrap"><table className="customer-table"><thead><tr><th>LINEユーザー</th><th>友だち状態</th><th>登録日</th><th>最終確認日</th></tr></thead><tbody>{customers.map(customer => <tr key={customer.lineUserId || customer.id}>

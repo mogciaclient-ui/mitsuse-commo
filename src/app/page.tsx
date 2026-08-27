@@ -31,7 +31,7 @@ export default function LoginPage() {
   }
 
   return <main className="login-page"><section className="login-card">
-    <div className="login-brand">いいもの三瀬</div><div className="login-shop">LINE運用管理</div>
+    <div className="login-brand">いいもの三瀬</div><div className="login-shop">commo<span className="commo-dot">.</span></div>
     <h1>管理画面にログイン</h1><p>アンケートの回答状況を確認できます</p>
     <form onSubmit={handleLogin}>
       <label>メールアドレス<input name="email" required type="email" autoComplete="email" placeholder="admin@example.com" /></label>

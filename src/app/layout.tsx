@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "いいもの三瀬 | 管理画面ログイン",
-  description: "いいもの三瀬 LINE運用管理画面",
+  description: "いいもの三瀬 commo. 管理画面",
   icons: {
     icon: "/images/renkon-logo.png",
     shortcut: "/images/renkon-logo.png",

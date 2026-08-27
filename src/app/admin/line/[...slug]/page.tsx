@@ -10,8 +10,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
     surveys: "/line/users?view=responses",
     "surveys/current": "/line/users?view=responses",
     "broadcasts/composer": "/line/broadcasts?view=compose",
-    analytics: "/line/broadcasts?view=analysis",
-    "ai-suggestions": "/line/broadcasts?view=ai",
+    "ai-suggestions": "/line/analytics",
   };
   if (legacy[section]) {
     const target = typeof query.target === "string" ? `&target=${encodeURIComponent(query.target)}` : "";

@@ -54,7 +54,7 @@ export default function AdminPage() {
   }, [responses]);
 
   return <>
-    <header className="page-head"><div><h1>いいもの三瀬 LINE運用</h1><p>顧客とアンケートの状況をまとめて確認できます。</p></div></header>
+    <header className="page-head"><div><h1>いいもの三瀬 commo<span className="commo-dot">.</span></h1><p>顧客とアンケートの状況をまとめて確認できます。</p></div></header>
     {loading ? <p className="dashboard-status">回答データを読み込んでいます…</p> : null}
     {error ? <p className="dashboard-error" role="alert">{error}</p> : null}
 

@@ -1,5 +1,6 @@
 import { cert, getApps, initializeApp, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
+import { getAuth, type Auth } from "firebase-admin/auth";
 
 let adminApp: App | null = null;
 
@@ -11,4 +12,9 @@ export function getAdminFirestore(): Firestore | null {
     adminApp = getApps()[0] ?? initializeApp({ credential: cert(serviceAccount) });
   }
   return getFirestore(adminApp);
+}
+
+export function getAdminAuth(): Auth | null {
+  const database = getAdminFirestore();
+  return database && adminApp ? getAuth(adminApp) : null;
 }

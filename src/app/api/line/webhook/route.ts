@@ -28,7 +28,8 @@ export async function POST(request: Request) {
         return;
       }
       const profile = await getLineProfile(userId);
-      await reference.set({ lineUserId: userId, lineDisplayName: profile?.displayName ?? "LINEユーザー", linePictureUrl: profile?.pictureUrl ?? "", statusMessage: profile?.statusMessage ?? "", followed: true, firstSeenAt: FieldValue.serverTimestamp(), lastEventType: event.type ?? "unknown", lastSeenAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+      const existing = await reference.get();
+      await reference.set({ lineUserId: userId, lineDisplayName: profile?.displayName ?? "LINEユーザー", linePictureUrl: profile?.pictureUrl ?? "", statusMessage: profile?.statusMessage ?? "", followed: true, ...(!existing.exists ? { firstSeenAt: FieldValue.serverTimestamp() } : {}), lastEventType: event.type ?? "unknown", lastSeenAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
     }));
     return NextResponse.json({ ok: true });
   } catch (cause) {

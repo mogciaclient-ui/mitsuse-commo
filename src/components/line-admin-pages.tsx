@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { firebaseAuth, firestore } from "@/lib/firebase/client";
 import { SurveyOverview } from "@/components/survey-overview";
 import { SurveyCatalog } from "@/components/survey-catalog";
+import { CouponSettings } from "@/components/coupon-settings";
 import styles from "./line-admin-pages.module.css";
 
 type Response = { id: string; lineUserId?: string; lineDisplayName?: string; storeGroup?: string; store?: string; birthDate?: string; message?: string; createdAt?: Timestamp | null };
@@ -80,7 +81,7 @@ function Suggestions() {
   return <div className={styles.stack}><Header title="AI提案" description="現在の顧客・回答状況をもとに次のアクションを提案します。" /><div className={styles.grid}>{suggestions.map(item => <article className={`card ${styles.suggestion}`} key={item.title}><small>{item.label}</small><h2>{item.title}</h2><p>{item.text}</p></article>)}</div></div>;
 }
 
-function Settings() { const settings = [{ name: "LIFFアンケート", text: "LINEログインとアンケート回答の連携", value: process.env.NEXT_PUBLIC_LIFF_ID ? "設定済み" : "未設定" }, { name: "Webhook URL", text: "LINE Developersに設定する受信先", value: "/api/line/webhook" }, { name: "顧客データ", text: "LINEイベントとアンケート回答を統合", value: "有効" }, { name: "管理者認証", text: "Firebase Authenticationによる管理画面保護", value: firebaseAuth ? "有効" : "未設定" }]; return <div className={styles.stack}><Header title="設定" description="LINE連携と管理画面の設定状況を確認できます。" /><section className={styles.settings}>{settings.map(item => <div className={styles.setting} key={item.name}><div><b>{item.name}</b><small>{item.text}</small></div><span className={styles.status}>{item.value}</span></div>)}</section><p className={styles.notice}>秘密情報は管理画面に表示しません。Messaging APIのChannel secretとアクセストークンはVercelの環境変数で管理してください。</p></div>; }
+function Settings() { const settings = [{ name: "LIFFアンケート", text: "LINEログインとアンケート回答の連携", value: process.env.NEXT_PUBLIC_LIFF_ID ? "設定済み" : "未設定" }, { name: "Webhook URL", text: "LINE Developersに設定する受信先", value: "/api/line/webhook" }, { name: "顧客データ", text: "LINEイベントとアンケート回答を統合", value: "有効" }, { name: "管理者認証", text: "Firebase Authenticationによる管理画面保護", value: firebaseAuth ? "有効" : "未設定" }]; return <div className={styles.stack}><Header title="設定" description="LINE連携と管理画面の設定状況を確認できます。" /><CouponSettings /><section className={styles.settings}>{settings.map(item => <div className={styles.setting} key={item.name}><div><b>{item.name}</b><small>{item.text}</small></div><span className={styles.status}>{item.value}</span></div>)}</section><p className={styles.notice}>秘密情報は管理画面に表示しません。Messaging APIのChannel secretとアクセストークンはVercelの環境変数で管理してください。</p></div>; }
 function Metric({ name, value }: { name: string; value: string }) { return <article className={`card ${styles.metric}`}><span>{name}</span><strong>{value}</strong></article>; }
 function NotFound() { return <><Header title="管理画面" description="ページが見つかりません。" /></>; }
 function date(value?: Timestamp | null) { return value?.toDate().toLocaleString("ja-JP", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) || "—"; }

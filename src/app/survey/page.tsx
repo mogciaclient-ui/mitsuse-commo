@@ -88,7 +88,7 @@ export default function SurveyPage() {
         return;
       }
       if (!response.ok) throw new Error(result.error || "送信に失敗しました。");
-      router.replace("/survey/thanks");
+      router.replace(result.rewardSent ? "/survey/thanks?reward=sent" : "/survey/thanks");
     } catch (cause) {
       console.error("Failed to save survey response", cause);
       setError(cause instanceof Error ? cause.message : "送信できませんでした。通信環境をご確認ください。");

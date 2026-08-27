@@ -4,6 +4,7 @@ import { collection, onSnapshot, orderBy, query, type Timestamp } from "firebase
 import { useEffect, useMemo, useState } from "react";
 import { firebaseAuth, firestore } from "@/lib/firebase/client";
 import { SurveyOverview } from "@/components/survey-overview";
+import { SurveyCatalog } from "@/components/survey-catalog";
 import styles from "./line-admin-pages.module.css";
 
 type Response = { id: string; lineUserId?: string; lineDisplayName?: string; storeGroup?: string; store?: string; birthDate?: string; message?: string; createdAt?: Timestamp | null };
@@ -30,7 +31,8 @@ function useAdminData(includeBroadcasts = false) {
 }
 
 export function LineAdminPage({ section }: { section: string }) {
-  if (section === "surveys") return <Surveys />;
+  if (section === "surveys/current") return <Surveys />;
+  if (section === "surveys") return <SurveyList />;
   if (section === "segments") return <Segments />;
   if (section === "broadcasts/composer") return <Broadcasts composer />;
   if (section === "broadcasts") return <Broadcasts />;
@@ -41,6 +43,11 @@ export function LineAdminPage({ section }: { section: string }) {
 }
 
 function Header({ title, description }: { title: string; description: string }) { return <header className="page-head"><div><h1>{title}</h1><p>{description}</p></div></header>; }
+
+function SurveyList() {
+  const { responses } = useAdminData();
+  return <div className={styles.stack}><Header title="アンケート一覧" description="現在公開中のアンケートと、過去のアンケートを確認できます。" /><SurveyCatalog responseCount={responses.length} /></div>;
+}
 
 function Surveys() {
   const { responses, loading } = useAdminData(); const [word, setWord] = useState(""); const [store, setStore] = useState("");

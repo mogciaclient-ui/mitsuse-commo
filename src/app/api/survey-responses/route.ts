@@ -38,6 +38,8 @@ export async function POST(request: Request) {
       lineDisplayName: profile.name ?? "LINEユーザー",
       linePictureUrl: profile.picture ?? "",
       source: "line-liff-survey",
+      surveyId: "customer-profile-2026-08",
+      surveyTitle: "お客様アンケート",
       schemaVersion: 2,
       createdAt: FieldValue.serverTimestamp(),
       });

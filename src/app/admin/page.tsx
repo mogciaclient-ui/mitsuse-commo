@@ -11,6 +11,9 @@ type SurveyResponse = {
   store: string;
   birthDate: string;
   message: string;
+  lineDisplayName?: string;
+  lineUserId?: string;
+  linePictureUrl?: string;
   createdAt: Timestamp | null;
 };
 
@@ -66,7 +69,7 @@ export default function AdminPage() {
       <section className="card panel"><div className="panel-title"><h2>最近のメッセージ</h2><span>{summary.messages}件</span></div><div className="message-list">{responses.filter(item => item.message?.trim()).slice(0, 5).map(item => <article key={item.id}><p>{item.message}</p><small>{item.store} ・ {formatDate(item.createdAt)}</small></article>)}{!summary.messages && !loading ? <Empty /> : null}</div></section>
     </section>
 
-    <section className="card panel responses-panel"><div className="panel-title"><h2>最近の回答</h2><span>最新50件</span></div><div className="responses-table-wrap"><table className="responses-table"><thead><tr><th>回答日時</th><th>販売店</th><th>購入店舗</th><th>生年月日</th><th>ひとこと</th></tr></thead><tbody>{responses.slice(0, 50).map(item => <tr key={item.id}><td>{formatDate(item.createdAt)}</td><td>{item.storeGroup}</td><td>{item.store}</td><td>{formatBirthDate(item.birthDate)}</td><td className="response-message">{item.message || "—"}</td></tr>)}</tbody></table>{!responses.length && !loading ? <Empty /> : null}</div></section>
+    <section className="card panel responses-panel"><div className="panel-title"><h2>最近の回答</h2><span>最新50件</span></div><div className="responses-table-wrap"><table className="responses-table"><thead><tr><th>回答日時</th><th>LINEユーザー</th><th>販売店</th><th>購入店舗</th><th>生年月日</th><th>ひとこと</th></tr></thead><tbody>{responses.slice(0, 50).map(item => <tr key={item.id}><td>{formatDate(item.createdAt)}</td><td><span className="line-user-cell">{item.linePictureUrl ? <img src={item.linePictureUrl} alt="" /> : null}<b>{item.lineDisplayName || "未連携"}</b></span></td><td>{item.storeGroup}</td><td>{item.store}</td><td>{formatBirthDate(item.birthDate)}</td><td className="response-message">{item.message || "—"}</td></tr>)}</tbody></table>{!responses.length && !loading ? <Empty /> : null}</div></section>
   </>;
 }
 

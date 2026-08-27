@@ -60,7 +60,7 @@ function Surveys() {
 function Segments() {
   const { responses, users } = useAdminData(); const answered = new Set(responses.map(r => r.lineUserId).filter(Boolean)); const active = users.filter(u => u.followed !== false); const nowMonth = new Date().getMonth() + 1;
   const values = [{ name: "アンケート回答済み", count: answered.size, text: "回答内容を使ったご案内ができます" }, { name: "アンケート未回答", count: active.filter(u => !answered.has(u.lineUserId || u.id)).length, text: "アンケートへの回答を促す対象です" }, { name: "今月がお誕生日", count: responses.filter(r => Number(r.birthDate?.slice(5, 7)) === nowMonth).length, text: "誕生日のお知らせに利用できます" }, { name: "現在確認できる友だち", count: active.length, text: "Webhookで確認できたユーザーです" }];
-  return <div className={styles.stack}><Header title="セグメント" description="顧客を条件ごとに分けて確認できます。" /><div className={styles.segments}>{values.map(item => <article className={`card ${styles.segment}`} key={item.name}><span>{item.name}</span><strong>{item.count.toLocaleString("ja-JP")}人</strong><p>{item.text}</p></article>)}</div><p className={styles.notice}>未認証アカウントのため、友だち数はWebhook設定後に反応があったユーザーを基準にしています。</p></div>;
+  return <div className={styles.stack}><Header title="セグメント" description="顧客を条件ごとに分けて確認できます。" /><div className={styles.segments}>{values.map(item => <article className={`card ${styles.segment}`} key={item.name}><span>{item.name}</span><strong>{item.count.toLocaleString("ja-JP")}人</strong><p>{item.text}</p></article>)}</div></div>;
 }
 
 function Broadcasts({ composer = false }: { composer?: boolean }) {

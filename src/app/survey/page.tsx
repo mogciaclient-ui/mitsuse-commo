@@ -27,6 +27,19 @@ export default function SurveyPage() {
         return;
       }
       const profile = await liff.getProfile();
+      const idToken = liff.getIDToken();
+      if (!idToken) throw new Error("LINE ID token is missing");
+      const statusResponse = await fetch("/api/survey-responses/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+      const status = await statusResponse.json();
+      if (!statusResponse.ok) throw new Error(status.error || "回答状況を確認できませんでした。");
+      if (status.submitted) {
+        router.replace("/survey/thanks");
+        return;
+      }
       if (active) {
         setLineDisplayName(profile.displayName);
         setLineReady(true);
@@ -37,7 +50,7 @@ export default function SurveyPage() {
       if (active) setError("LINEログインを確認できませんでした。LINEからもう一度開いてください。");
     });
     return () => { active = false; };
-  }, []);
+  }, [router]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -70,8 +83,12 @@ export default function SurveyPage() {
         body: JSON.stringify({ idToken, storeGroup, store, birthYear: year, birthMonth: month, birthDay: day, message }),
       });
       const result = await response.json();
+      if (response.status === 409 && result.alreadySubmitted) {
+        router.replace("/survey/thanks");
+        return;
+      }
       if (!response.ok) throw new Error(result.error || "送信に失敗しました。");
-      router.push("/survey/thanks");
+      router.replace("/survey/thanks");
     } catch (cause) {
       console.error("Failed to save survey response", cause);
       setError(cause instanceof Error ? cause.message : "送信できませんでした。通信環境をご確認ください。");

@@ -1,9 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { getAdminFirestore } from "@/lib/firebase/admin";
+import { verifyLineIdToken } from "@/lib/line/server";
 import { isValidStore, normalizeBirthDate } from "@/lib/survey";
-
-type VerifiedLineProfile = { sub?: string; name?: string; picture?: string; aud?: string };
 
 export async function POST(request: Request) {
   try {
@@ -16,21 +15,21 @@ export async function POST(request: Request) {
     if (!idToken) return NextResponse.json({ error: "LINEログイン情報がありません。" }, { status: 401 });
     if (!isValidStore(storeGroup, store) || !birthDate || message.length > 1000) return NextResponse.json({ error: "入力内容をご確認ください。" }, { status: 400 });
 
-    const channelId = process.env.LINE_LOGIN_CHANNEL_ID;
-    if (!channelId) return NextResponse.json({ error: "LINE連携の設定が完了していません。" }, { status: 503 });
-    const verifyResponse = await fetch("https://api.line.me/oauth2/v2.1/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ id_token: idToken, client_id: channelId }),
-      cache: "no-store",
-    });
-    if (!verifyResponse.ok) return NextResponse.json({ error: "LINEログインを確認できませんでした。" }, { status: 401 });
-    const profile = await verifyResponse.json() as VerifiedLineProfile;
-    if (!profile.sub || profile.aud !== channelId) return NextResponse.json({ error: "LINEユーザーを確認できませんでした。" }, { status: 401 });
+    const profile = await verifyLineIdToken(idToken);
+    if (!profile) return NextResponse.json({ error: "LINEログインを確認できませんでした。" }, { status: 401 });
 
     const database = getAdminFirestore();
     if (!database) return NextResponse.json({ error: "回答保存の設定が完了していません。" }, { status: 503 });
-    await database.collection("surveyResponses").add({
+    const previousResponses = await database.collection("surveyResponses")
+      .where("lineUserId", "==", profile.sub)
+      .limit(1)
+      .get();
+    if (!previousResponses.empty) {
+      return NextResponse.json({ error: "このアンケートには回答済みです。", alreadySubmitted: true }, { status: 409 });
+    }
+
+    try {
+      await database.collection("surveyResponses").doc(profile.sub).create({
       storeGroup,
       store,
       birthDate,
@@ -41,7 +40,14 @@ export async function POST(request: Request) {
       source: "line-liff-survey",
       schemaVersion: 2,
       createdAt: FieldValue.serverTimestamp(),
-    });
+      });
+    } catch (cause) {
+      const code = typeof cause === "object" && cause !== null && "code" in cause ? String(cause.code) : "";
+      if (code === "6" || code === "already-exists") {
+        return NextResponse.json({ error: "このアンケートには回答済みです。", alreadySubmitted: true }, { status: 409 });
+      }
+      throw cause;
+    }
     return NextResponse.json({ ok: true });
   } catch (cause) {
     console.error("Survey response API failed", cause);

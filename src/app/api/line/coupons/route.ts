@@ -2,6 +2,8 @@ import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { getAdminAuth, getAdminFirestore } from "@/lib/firebase/admin";
 
+export const runtime = "nodejs";
+
 type CouponItem = { couponId: string; title: string };
 
 async function authorize(request: Request) {

@@ -1,6 +1,4 @@
-import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
-import { getAdminAuth, getAdminFirestore } from "@/lib/firebase/admin";
 
 export const runtime = "nodejs";
 
@@ -11,6 +9,7 @@ async function authorize(request: Request) {
   const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
   if (!token) return false;
   try {
+    const { getAdminAuth } = await import("@/lib/firebase/admin");
     const auth = getAdminAuth();
     if (!auth) return false;
     await auth.verifyIdToken(token);
@@ -24,6 +23,7 @@ async function authorize(request: Request) {
 export async function GET(request: Request) {
   try {
     if (!await authorize(request)) return NextResponse.json({ error: "管理者認証を確認できませんでした。再ログインしてください。" }, { status: 401 });
+    const { getAdminFirestore } = await import("@/lib/firebase/admin");
     const accessToken = process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN;
     const database = getAdminFirestore();
     if (!accessToken || !database) return NextResponse.json({ error: "Messaging APIの設定が完了していません。" }, { status: 503 });
@@ -43,6 +43,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     if (!await authorize(request)) return NextResponse.json({ error: "管理者認証を確認できませんでした。再ログインしてください。" }, { status: 401 });
+    const [{ getAdminFirestore }, { FieldValue }] = await Promise.all([import("@/lib/firebase/admin"), import("firebase-admin/firestore")]);
     const database = getAdminFirestore();
     const accessToken = process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN;
     if (!database || !accessToken) return NextResponse.json({ error: "Messaging APIの設定が完了していません。" }, { status: 503 });

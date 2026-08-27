@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { getAdminAuth, getAdminFirestore } from "@/lib/firebase/admin";
 
-type OpenAIResponse = { output?: Array<{ content?: Array<{ type?: string; text?: string }> }> };
+type OpenAIResponse = {
+  output_text?: string;
+  output?: Array<{ content?: Array<{ type?: string; text?: string }> }>;
+  status?: string;
+  incomplete_details?: { reason?: string };
+};
 
 export async function POST(request: Request) {
   try {
@@ -24,11 +29,11 @@ export async function POST(request: Request) {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || "gpt-5-mini",
+        model: process.env.OPENAI_MODEL || "gpt-4o-mini",
         store: false,
         instructions: action === "compose" ? composeInstructions : analysisInstructions,
         input: JSON.stringify(input),
-        max_output_tokens: action === "compose" ? 500 : 1200,
+        max_output_tokens: action === "compose" ? 1200 : 3000,
         text: { format },
       }),
     });
@@ -38,13 +43,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "AI処理に失敗しました。しばらくしてから再度お試しください。" }, { status: 502 });
     }
     const result = JSON.parse(raw) as OpenAIResponse;
-    const output = result.output?.flatMap(item => item.content ?? []).find(item => item.type === "output_text")?.text;
-    if (!output) return NextResponse.json({ error: "AIから回答を取得できませんでした。" }, { status: 502 });
-    return NextResponse.json(JSON.parse(output));
+    const output = extractOutputText(result);
+    if (!output) {
+      console.error("OpenAI API returned no output text", {
+        status: result.status,
+        reason: result.incomplete_details?.reason,
+      });
+      const error = result.incomplete_details?.reason === "max_output_tokens"
+        ? "AIの回答が長くなりすぎました。もう一度お試しください。"
+        : "AIから回答を取得できませんでした。もう一度お試しください。";
+      return NextResponse.json({ error }, { status: 502 });
+    }
+    try {
+      return NextResponse.json(JSON.parse(output));
+    } catch {
+      console.error("OpenAI API returned invalid JSON", output.slice(0, 800));
+      return NextResponse.json({ error: "AIの回答を読み取れませんでした。もう一度お試しください。" }, { status: 502 });
+    }
   } catch (cause) {
     console.error("AI request failed", cause);
     return NextResponse.json({ error: "AI処理に失敗しました。" }, { status: 500 });
   }
+}
+
+function extractOutputText(result: OpenAIResponse) {
+  if (typeof result.output_text === "string" && result.output_text.trim()) return result.output_text;
+  return result.output
+    ?.flatMap(item => item.content ?? [])
+    .find(item => item.type === "output_text" && typeof item.text === "string")
+    ?.text;
 }
 
 async function composeInput(body: Record<string, unknown>) {

@@ -12,15 +12,20 @@ export async function POST(request: Request) {
     await auth.verifyIdToken(idToken);
     const body = await request.json();
     const message = typeof body.message === "string" ? body.message.trim() : "";
-    const target = ["all", "answered", "unanswered"].includes(body.target) ? body.target as string : "";
+    const requestedTarget = typeof body.target === "string" ? body.target : "";
+    const target = ["all", "answered", "unanswered", "birthday-next"].includes(requestedTarget) || requestedTarget.startsWith("store:") ? requestedTarget : "";
     if (!message || message.length > 5000 || !target) return NextResponse.json({ error: "配信内容をご確認ください。" }, { status: 400 });
     const accessToken = process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN;
     if (!accessToken) return NextResponse.json({ error: "Messaging APIのアクセストークンが設定されていません。" }, { status: 503 });
     const [usersSnapshot, responsesSnapshot] = await Promise.all([database.collection("lineUsers").where("followed", "==", true).get(), database.collection("surveyResponses").get()]);
     const answeredIds = new Set(responsesSnapshot.docs.map(doc => doc.get("lineUserId")).filter((id): id is string => typeof id === "string"));
+    const nextMonth = new Date().getMonth() === 11 ? 1 : new Date().getMonth() + 2;
+    const birthdayIds = new Set(responsesSnapshot.docs.filter(doc => Number(String(doc.get("birthDate") ?? "").slice(5, 7)) === nextMonth).map(doc => doc.get("lineUserId")).filter((id): id is string => typeof id === "string"));
+    const selectedStore = target.startsWith("store:") ? target.slice(6) : "";
+    const storeIds = new Set(responsesSnapshot.docs.filter(doc => selectedStore && doc.get("store") === selectedStore).map(doc => doc.get("lineUserId")).filter((id): id is string => typeof id === "string"));
     const webhookIds = usersSnapshot.docs.map(doc => doc.get("lineUserId") || doc.id).filter((id): id is string => typeof id === "string");
     const knownIds = [...new Set([...webhookIds, ...answeredIds])];
-    const recipients = knownIds.filter(id => target === "all" || (target === "answered" ? answeredIds.has(id) : !answeredIds.has(id)));
+    const recipients = knownIds.filter(id => target === "all" || (target === "answered" ? answeredIds.has(id) : target === "unanswered" ? !answeredIds.has(id) : target === "birthday-next" ? birthdayIds.has(id) : storeIds.has(id)));
     if (!recipients.length) return NextResponse.json({ error: "配信対象の顧客がいません。" }, { status: 400 });
     const record = await database.collection("broadcasts").add({ message, target, recipientCount: recipients.length, status: "sending", createdAt: FieldValue.serverTimestamp() });
     for (let index = 0; index < recipients.length; index += 500) {

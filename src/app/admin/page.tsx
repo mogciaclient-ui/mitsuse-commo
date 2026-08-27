@@ -45,7 +45,8 @@ export default function AdminPage() {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const thisMonth = responses.filter(item => item.createdAt?.toDate() && item.createdAt.toDate() >= monthStart).length;
     const messages = responses.filter(item => item.message?.trim()).length;
-    const birthdays = responses.filter(item => Number(item.birthDate?.slice(5, 7)) === now.getMonth() + 1).length;
+    const nextMonth = now.getMonth() === 11 ? 1 : now.getMonth() + 2;
+    const birthdays = responses.filter(item => Number(item.birthDate?.slice(5, 7)) === nextMonth).length;
     const storeCounts = new Map<string, number>();
     responses.forEach(item => storeCounts.set(item.store, (storeCounts.get(item.store) ?? 0) + 1));
     const stores = [...storeCounts.entries()].sort((a, b) => b[1] - a[1]);
@@ -60,7 +61,7 @@ export default function AdminPage() {
     <section className="kpi-grid">
       <Kpi icon="survey" label="総回答数" value={responses.length} unit="件" />
       <Kpi icon="chart" label="今月の回答" value={summary.thisMonth} unit="件" />
-      <Kpi icon="users" label="今月がお誕生日" value={summary.birthdays} unit="人" />
+      <Kpi icon="users" label="来月がお誕生日" value={summary.birthdays} unit="人" />
       <Kpi icon="cursor" label="メッセージあり" value={summary.messages} unit="件" />
     </section>
 

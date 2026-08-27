@@ -74,7 +74,7 @@ export default function AdminPage() {
 }
 
 function Kpi({ icon, label, value, unit }: { icon: "survey" | "chart" | "users" | "cursor"; label: string; value: number; unit: string }) {
-  return <article className="card kpi"><span className="round-icon"><Icon name={icon} /></span><div><p>{label}</p><strong>{value.toLocaleString("ja-JP")}<small>{unit}</small></strong><span>Firestore実データ</span></div></article>;
+  return <article className="card kpi"><span className="round-icon"><Icon name={icon} /></span><div><p>{label}</p><strong>{value.toLocaleString("ja-JP")}<small>{unit}</small></strong></div></article>;
 }
 
 function Empty() { return <p className="dashboard-empty">まだデータがありません。</p>; }

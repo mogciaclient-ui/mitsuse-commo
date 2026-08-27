@@ -67,8 +67,16 @@ async function analysisInput(database: NonNullable<ReturnType<typeof getAdminFir
     friendCount: usersSnapshot.docs.filter(doc => doc.get("followed") !== false).length,
     responseCount: responses.length,
     storeCounts: [...stores].sort((a, b) => b[1] - a[1]).slice(0, 25).map(([store, count]) => ({ store, count })),
+    comments: responses.map(item => sanitizeComment(item.message)).filter(Boolean).slice(0, 80),
     recentBroadcasts: broadcastsSnapshot.docs.map(doc => ({ target: doc.get("target") ?? "all", recipientCount: doc.get("recipientCount") ?? 0, status: doc.get("status") ?? "unknown" })),
   };
+}
+
+function sanitizeComment(value: unknown) {
+  if (typeof value !== "string") return "";
+  return value.trim().slice(0, 500)
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[メールアドレス]")
+    .replace(/(?:\+81[-\s]?|0)\d{1,4}[-\s]?\d{1,4}[-\s]?\d{3,4}/g, "[電話番号]");
 }
 
 function targetLabel(target: string) {
@@ -80,7 +88,7 @@ function targetLabel(target: string) {
 }
 
 const composeInstructions = "あなたは『いいもの三瀬』のLINE配信担当です。高齢のお客様にも読みやすい、やさしく簡潔な日本語で配信文を1案作成してください。事実や特典を創作せず、入力にない価格・期限・URLを加えないでください。絵文字は0〜2個、本文は250文字以内にしてください。";
-const analysisInstructions = "あなたは『いいもの三瀬』の販促分析担当です。渡された集計データだけを根拠に、経営者がすぐ理解できる簡潔な日本語で分析してください。因果関係を断定せず、データが少ない場合はその旨を明記してください。個人の特定やセンシティブな推測はしないでください。";
+const analysisInstructions = "あなたは『いいもの三瀬』の販促分析担当です。渡された集計データとお客様の自由記述だけを根拠に、経営者がすぐ理解できる簡潔な日本語で分析してください。自由記述から共通する要望や好意的・改善を求める傾向を要約してください。個別コメントを長く転載せず、因果関係を断定せず、データが少ない場合はその旨を明記してください。個人の特定やセンシティブな推測はしないでください。";
 
 const composeSchema = { type: "json_schema", name: "line_message", strict: true, schema: { type: "object", properties: { message: { type: "string" }, note: { type: "string" } }, required: ["message", "note"], additionalProperties: false } };
 const analysisSchema = { type: "json_schema", name: "business_analysis", strict: true, schema: { type: "object", properties: { summary: { type: "string" }, insights: { type: "array", items: { type: "object", properties: { title: { type: "string" }, detail: { type: "string" } }, required: ["title", "detail"], additionalProperties: false } }, actions: { type: "array", items: { type: "object", properties: { title: { type: "string" }, detail: { type: "string" } }, required: ["title", "detail"], additionalProperties: false } } }, required: ["summary", "insights", "actions"], additionalProperties: false } };

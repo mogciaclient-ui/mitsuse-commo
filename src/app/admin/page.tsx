@@ -2,7 +2,6 @@
 
 import { collection, onSnapshot, orderBy, query, type Timestamp } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { firestore } from "@/lib/firebase/client";
 
@@ -55,7 +54,7 @@ export default function AdminPage() {
   }, [responses]);
 
   return <>
-    <header className="page-head"><div><h1>いいもの三瀬 LINE運用</h1><p>今日確認したい情報と、よく使う操作をまとめています。</p></div><div className="head-actions"><Link className="primary" href="/line/users?view=responses">回答を見る</Link><Link className="primary" href="/line/broadcasts?view=compose">配信を作る</Link></div></header>
+    <header className="page-head"><div><h1>いいもの三瀬 LINE運用</h1><p>顧客とアンケートの状況をまとめて確認できます。</p></div></header>
     {loading ? <p className="dashboard-status">回答データを読み込んでいます…</p> : null}
     {error ? <p className="dashboard-error" role="alert">{error}</p> : null}
 

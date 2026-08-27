@@ -5,19 +5,26 @@ import { getAdminAuth, getAdminFirestore } from "@/lib/firebase/admin";
 type CouponItem = { couponId: string; title: string };
 
 async function authorize(request: Request) {
-  const auth = getAdminAuth();
   const authorization = request.headers.get("authorization") ?? "";
   const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-  if (!auth || !token) return false;
-  try { await auth.verifyIdToken(token); return true; } catch { return false; }
+  if (!token) return false;
+  try {
+    const auth = getAdminAuth();
+    if (!auth) return false;
+    await auth.verifyIdToken(token);
+    return true;
+  } catch (cause) {
+    console.error("Coupon API authorization failed", cause);
+    return false;
+  }
 }
 
 export async function GET(request: Request) {
-  if (!await authorize(request)) return NextResponse.json({ error: "管理者認証が必要です。" }, { status: 401 });
-  const accessToken = process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN;
-  const database = getAdminFirestore();
-  if (!accessToken || !database) return NextResponse.json({ error: "Messaging APIの設定が完了していません。" }, { status: 503 });
   try {
+    if (!await authorize(request)) return NextResponse.json({ error: "管理者認証を確認できませんでした。再ログインしてください。" }, { status: 401 });
+    const accessToken = process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN;
+    const database = getAdminFirestore();
+    if (!accessToken || !database) return NextResponse.json({ error: "Messaging APIの設定が完了していません。" }, { status: 503 });
     const [couponResponse, setting] = await Promise.all([
       fetch("https://api.line.me/v2/bot/coupon?status=RUNNING&limit=100", { headers: { Authorization: `Bearer ${accessToken}` }, cache: "no-store" }),
       database.collection("appSettings").doc("surveyReward").get(),
@@ -32,11 +39,11 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  if (!await authorize(request)) return NextResponse.json({ error: "管理者認証が必要です。" }, { status: 401 });
-  const database = getAdminFirestore();
-  const accessToken = process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN;
-  if (!database || !accessToken) return NextResponse.json({ error: "Messaging APIの設定が完了していません。" }, { status: 503 });
   try {
+    if (!await authorize(request)) return NextResponse.json({ error: "管理者認証を確認できませんでした。再ログインしてください。" }, { status: 401 });
+    const database = getAdminFirestore();
+    const accessToken = process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN;
+    if (!database || !accessToken) return NextResponse.json({ error: "Messaging APIの設定が完了していません。" }, { status: 503 });
     const body = await request.json();
     const couponId = typeof body.couponId === "string" ? body.couponId : "";
     const couponTitle = typeof body.couponTitle === "string" ? body.couponTitle : "";

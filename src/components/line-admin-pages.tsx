@@ -3,6 +3,7 @@
 import { collection, onSnapshot, orderBy, query, type Timestamp } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { firebaseAuth, firestore } from "@/lib/firebase/client";
+import { SurveyOverview } from "@/components/survey-overview";
 import styles from "./line-admin-pages.module.css";
 
 type Response = { id: string; lineUserId?: string; lineDisplayName?: string; storeGroup?: string; store?: string; birthDate?: string; message?: string; createdAt?: Timestamp | null };
@@ -44,7 +45,7 @@ function Surveys() {
   const { responses, loading } = useAdminData(); const [word, setWord] = useState(""); const [store, setStore] = useState("");
   const stores = useMemo(() => [...new Set(responses.map(item => item.store).filter(Boolean) as string[])].sort(), [responses]);
   const filtered = responses.filter(item => (!store || item.store === store) && (!word || [item.lineDisplayName, item.store, item.message].some(value => value?.includes(word))));
-  return <div className={styles.stack}><Header title="アンケート" description="お客様から届いた回答を検索・確認できます。" /><section className={`card ${styles.panel}`}><div className={styles.toolbar}><input className={styles.input} value={word} onChange={e => setWord(e.target.value)} placeholder="表示名・メッセージで検索" /><select className={styles.select} value={store} onChange={e => setStore(e.target.value)}><option value="">すべての店舗</option>{stores.map(name => <option key={name}>{name}</option>)}</select></div>{loading ? <p className={styles.empty}>読み込んでいます…</p> : <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>回答日</th><th>LINEユーザー</th><th>購入店舗</th><th>生年月日</th><th>メッセージ</th></tr></thead><tbody>{filtered.map(item => <tr key={item.id}><td>{date(item.createdAt)}</td><td>{item.lineDisplayName || "LINEユーザー"}</td><td>{item.store || "—"}</td><td>{birth(item.birthDate)}</td><td className={styles.message}>{item.message || "—"}</td></tr>)}</tbody></table>{!filtered.length ? <p className={styles.empty}>回答がありません。</p> : null}</div>}</section></div>;
+  return <div className={styles.stack}><Header title="アンケート" description="公開中のアンケート内容と、お客様から届いた回答を確認できます。" /><SurveyOverview responseCount={responses.length} /><section className={`card ${styles.panel}`}><div className={styles.toolbar}><input className={styles.input} value={word} onChange={e => setWord(e.target.value)} placeholder="表示名・メッセージで検索" /><select className={styles.select} value={store} onChange={e => setStore(e.target.value)}><option value="">すべての店舗</option>{stores.map(name => <option key={name}>{name}</option>)}</select></div>{loading ? <p className={styles.empty}>読み込んでいます…</p> : <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>回答日</th><th>LINEユーザー</th><th>購入店舗</th><th>生年月日</th><th>メッセージ</th></tr></thead><tbody>{filtered.map(item => <tr key={item.id}><td>{date(item.createdAt)}</td><td>{item.lineDisplayName || "LINEユーザー"}</td><td>{item.store || "—"}</td><td>{birth(item.birthDate)}</td><td className={styles.message}>{item.message || "—"}</td></tr>)}</tbody></table>{!filtered.length ? <p className={styles.empty}>回答がありません。</p> : null}</div>}</section></div>;
 }
 
 function Segments() {

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "いい麺亭 | 管理画面ログイン",
-  description: "いい麺亭 LINE運用管理画面",
+  title: "いいもの三瀬 | 管理画面ログイン",
+  description: "いいもの三瀬 LINE運用管理画面",
   robots: { index: false, follow: false },
 };
 

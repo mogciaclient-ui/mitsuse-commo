@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "いい麺亭 お客様アンケート",
-  description: "いい麺亭から、うれしいお知らせをお届けするための簡単なアンケートです。",
+  title: "いいもの三瀬 お客様アンケート",
+  description: "いいもの三瀬から、うれしいお知らせをお届けするための簡単なアンケートです。",
   openGraph: {
-    title: "いい麺亭 お客様アンケート",
+    title: "いいもの三瀬 お客様アンケート",
     description: "簡単なアンケートにご協力ください。",
     type: "website",
     locale: "ja_JP",

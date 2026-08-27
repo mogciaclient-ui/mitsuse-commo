@@ -53,7 +53,7 @@ export default function AdminPage() {
   }, [responses]);
 
   return <>
-    <header className="page-head"><div><h1>いい麺亭 アンケート管理</h1><p>お客様から届いた回答をリアルタイムで確認できます。</p></div><span className="data-pill"><Icon name="survey" />回答データ：{responses.length.toLocaleString("ja-JP")}件</span></header>
+    <header className="page-head"><div><h1>いいもの三瀬 アンケート管理</h1><p>お客様から届いた回答をリアルタイムで確認できます。</p></div><span className="data-pill"><Icon name="survey" />回答データ：{responses.length.toLocaleString("ja-JP")}件</span></header>
     {loading ? <p className="dashboard-status">回答データを読み込んでいます…</p> : null}
     {error ? <p className="dashboard-error" role="alert">{error}</p> : null}
 

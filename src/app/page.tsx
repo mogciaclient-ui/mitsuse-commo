@@ -31,10 +31,10 @@ export default function LoginPage() {
   }
 
   return <main className="login-page"><section className="login-card">
-    <div className="login-brand">いい麺亭</div><div className="login-shop">LINE運用管理</div>
+    <div className="login-brand">いいもの三瀬</div><div className="login-shop">LINE運用管理</div>
     <h1>管理画面にログイン</h1><p>アンケートの回答状況を確認できます</p>
     <form onSubmit={handleLogin}>
-      <label>メールアドレス<input name="email" required type="email" autoComplete="email" placeholder="example@iimentei.jp" /></label>
+      <label>メールアドレス<input name="email" required type="email" autoComplete="email" placeholder="admin@example.com" /></label>
       <label>パスワード<input name="password" required type="password" autoComplete="current-password" placeholder="パスワードを入力" /></label>
       {error ? <p className="login-error" role="alert">{error}</p> : null}
       <button className="login-submit" type="submit" disabled={loading}>{loading ? "ログインしています…" : "ログイン"}</button>

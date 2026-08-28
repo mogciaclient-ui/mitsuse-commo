@@ -9,7 +9,7 @@ import { CouponSettings } from "@/components/coupon-settings";
 import { SegmentsDashboard } from "@/components/segments-dashboard";
 import styles from "./line-admin-pages.module.css";
 
-type Response = { id: string; lineUserId?: string; lineDisplayName?: string; storeGroup?: string; store?: string; birthDate?: string; message?: string; createdAt?: Timestamp | null };
+type Response = { id: string; lineUserId?: string; lineDisplayName?: string; purchaseExperience?: string; storeGroup?: string; store?: string; birthDate?: string; message?: string; createdAt?: Timestamp | null };
 type User = { id: string; lineUserId?: string; lineDisplayName?: string; followed?: boolean };
 type Broadcast = { id: string; message?: string; target?: string; recipientCount?: number; status?: string; createdAt?: Timestamp | null; sentAt?: Timestamp | null };
 
@@ -55,7 +55,7 @@ function Surveys() {
   const { responses, loading } = useAdminData(); const [word, setWord] = useState(""); const [store, setStore] = useState("");
   const stores = useMemo(() => [...new Set(responses.map(item => item.store).filter(Boolean) as string[])].sort(), [responses]);
   const filtered = responses.filter(item => (!store || item.store === store) && (!word || [item.lineDisplayName, item.store, item.message].some(value => value?.includes(word))));
-  return <div className={styles.stack}><Header title="アンケート" description="公開中のアンケート内容と、お客様から届いた回答を確認できます。" /><SurveyOverview responseCount={responses.length} /><CouponSettings /><section className={`card ${styles.panel}`}><div className={styles.toolbar}><input className={styles.input} value={word} onChange={e => setWord(e.target.value)} placeholder="表示名・メッセージで検索" /><select className={styles.select} value={store} onChange={e => setStore(e.target.value)}><option value="">すべての店舗</option>{stores.map(name => <option key={name}>{name}</option>)}</select></div>{loading ? <p className={styles.empty}>読み込んでいます…</p> : <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>回答日</th><th>LINEユーザー</th><th>購入店舗</th><th>生年月日</th><th>メッセージ</th></tr></thead><tbody>{filtered.map(item => <tr key={item.id}><td>{date(item.createdAt)}</td><td>{item.lineDisplayName || "LINEユーザー"}</td><td>{item.store || "—"}</td><td>{birth(item.birthDate)}</td><td className={styles.message}>{item.message || "—"}</td></tr>)}</tbody></table>{!filtered.length ? <p className={styles.empty}>回答がありません。</p> : null}</div>}</section></div>;
+  return <div className={styles.stack}><Header title="アンケート" description="公開中のアンケート内容と、お客様から届いた回答を確認できます。" /><SurveyOverview responseCount={responses.length} /><CouponSettings /><section className={`card ${styles.panel}`}><div className={styles.toolbar}><input className={styles.input} value={word} onChange={e => setWord(e.target.value)} placeholder="表示名・メッセージで検索" /><select className={styles.select} value={store} onChange={e => setStore(e.target.value)}><option value="">すべての店舗</option>{stores.map(name => <option key={name}>{name}</option>)}</select></div>{loading ? <p className={styles.empty}>読み込んでいます…</p> : <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>回答日</th><th>LINEユーザー</th><th>購入経験</th><th>購入店舗</th><th>生年月日</th><th>メッセージ</th></tr></thead><tbody>{filtered.map(item => <tr key={item.id}><td>{date(item.createdAt)}</td><td>{item.lineDisplayName || "LINEユーザー"}</td><td>{purchaseLabel(item.purchaseExperience)}</td><td>{item.store || "—"}</td><td>{birth(item.birthDate)}</td><td className={styles.message}>{item.message || "—"}</td></tr>)}</tbody></table>{!filtered.length ? <p className={styles.empty}>回答がありません。</p> : null}</div>}</section></div>;
 }
 
 function Segments() {
@@ -93,5 +93,6 @@ function Metric({ name, value }: { name: string; value: string }) { return <arti
 function NotFound() { return <><Header title="管理画面" description="ページが見つかりません。" /></>; }
 function date(value?: Timestamp | null) { return value?.toDate().toLocaleString("ja-JP", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) || "—"; }
 function birth(value?: string) { if (!value) return "—"; const [y, m, d] = value.split("-"); return `${y}年${Number(m)}月${Number(d)}日`; }
+function purchaseLabel(value?: string) { return value === "yes" ? "はい" : value === "no" ? "いいえ" : value === "unknown" ? "わからない" : "未回答（項目追加前）"; }
 function targetLabel(value?: string) { return value === "answered" ? "回答済み" : value === "unanswered" ? "未回答" : value === "birthday-next" ? "来月がお誕生日" : value?.startsWith("store:") ? `購入店舗：${value.slice(6)}` : "全員"; }
 async function readJson(response: globalThis.Response) { const text = await response.text(); if (!text) return {}; try { return JSON.parse(text); } catch { return {}; } }

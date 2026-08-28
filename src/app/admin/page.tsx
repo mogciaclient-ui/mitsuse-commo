@@ -9,6 +9,7 @@ type SurveyResponse = {
   id: string;
   storeGroup: string;
   store: string;
+  purchaseExperience?: string;
   birthDate: string;
   message: string;
   lineDisplayName?: string;
@@ -70,7 +71,7 @@ export default function AdminPage() {
       <section className="card panel"><div className="panel-title"><h2>最近のメッセージ</h2><span>{summary.messages}件</span></div><div className="message-list">{responses.filter(item => item.message?.trim()).slice(0, 5).map(item => <article key={item.id}><p>{item.message}</p><small>{item.store} ・ {formatDate(item.createdAt)}</small></article>)}{!summary.messages && !loading ? <Empty /> : null}</div></section>
     </section>
 
-    <section className="card panel responses-panel"><div className="panel-title"><h2>最近の回答</h2><span>最新50件</span></div><div className="responses-table-wrap"><table className="responses-table"><thead><tr><th>回答日時</th><th>LINEユーザー</th><th>販売店</th><th>購入店舗</th><th>生年月日</th><th>ひとこと</th></tr></thead><tbody>{responses.slice(0, 50).map(item => <tr key={item.id}><td>{formatDate(item.createdAt)}</td><td><span className="line-user-cell">{item.linePictureUrl ? <img src={item.linePictureUrl} alt="" /> : null}<b>{item.lineDisplayName || "未連携"}</b></span></td><td>{item.storeGroup}</td><td>{item.store}</td><td>{formatBirthDate(item.birthDate)}</td><td className="response-message">{item.message || "—"}</td></tr>)}</tbody></table>{!responses.length && !loading ? <Empty /> : null}</div></section>
+    <section className="card panel responses-panel"><div className="panel-title"><h2>最近の回答</h2><span>最新50件</span></div><div className="responses-table-wrap"><table className="responses-table"><thead><tr><th>回答日時</th><th>LINEユーザー</th><th>購入経験</th><th>販売店</th><th>購入店舗</th><th>生年月日</th><th>ひとこと</th></tr></thead><tbody>{responses.slice(0, 50).map(item => <tr key={item.id}><td>{formatDate(item.createdAt)}</td><td><span className="line-user-cell">{item.linePictureUrl ? <img src={item.linePictureUrl} alt="" /> : null}<b>{item.lineDisplayName || "未連携"}</b></span></td><td>{purchaseLabel(item.purchaseExperience)}</td><td>{item.storeGroup || "—"}</td><td>{item.store || "—"}</td><td>{formatBirthDate(item.birthDate)}</td><td className="response-message">{item.message || "—"}</td></tr>)}</tbody></table>{!responses.length && !loading ? <Empty /> : null}</div></section>
   </>;
 }
 
@@ -81,3 +82,4 @@ function Kpi({ icon, label, value, unit }: { icon: "survey" | "chart" | "users" 
 function Empty() { return <p className="dashboard-empty">まだデータがありません。</p>; }
 function formatDate(value: Timestamp | null) { return value?.toDate().toLocaleString("ja-JP", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) ?? "送信中"; }
 function formatBirthDate(value: string) { const [year, month, day] = value.split("-"); return year && month && day ? `${year}年${Number(month)}月${Number(day)}日` : "—"; }
+function purchaseLabel(value?: string) { return value === "yes" ? "はい" : value === "no" ? "いいえ" : value === "unknown" ? "わからない" : "未回答（項目追加前）"; }

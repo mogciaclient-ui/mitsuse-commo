@@ -10,10 +10,13 @@ export async function POST(request: Request) {
     const idToken = typeof body.idToken === "string" ? body.idToken : "";
     const storeGroup = typeof body.storeGroup === "string" ? body.storeGroup : "";
     const store = typeof body.store === "string" ? body.store : "";
+    const purchaseExperience = typeof body.purchaseExperience === "string" ? body.purchaseExperience : "";
     const message = typeof body.message === "string" ? body.message.trim() : "";
     const birthDate = normalizeBirthDate(Number(body.birthYear), Number(body.birthMonth), Number(body.birthDay));
     if (!idToken) return NextResponse.json({ error: "LINEログイン情報がありません。" }, { status: 401 });
-    if (!isValidStore(storeGroup, store) || !birthDate || message.length > 1000) return NextResponse.json({ error: "入力内容をご確認ください。" }, { status: 400 });
+    const hasValidExperience = ["yes", "no", "unknown"].includes(purchaseExperience);
+    const hasValidStore = purchaseExperience !== "yes" || isValidStore(storeGroup, store);
+    if (!hasValidExperience || !hasValidStore || !birthDate || message.length > 1000) return NextResponse.json({ error: "入力内容をご確認ください。" }, { status: 400 });
 
     const profile = await verifyLineIdToken(idToken);
     if (!profile) return NextResponse.json({ error: "LINEログインを確認できませんでした。" }, { status: 401 });
@@ -31,8 +34,9 @@ export async function POST(request: Request) {
     const responseReference = database.collection("surveyResponses").doc(profile.sub);
     try {
       await responseReference.create({
-      storeGroup,
-      store,
+      purchaseExperience,
+      storeGroup: purchaseExperience === "yes" ? storeGroup : "",
+      store: purchaseExperience === "yes" ? store : "",
       birthDate,
       message,
       lineUserId: profile.sub,
@@ -41,7 +45,7 @@ export async function POST(request: Request) {
       source: "line-liff-survey",
       surveyId: "customer-profile-2026-08",
       surveyTitle: "お客様アンケート",
-      schemaVersion: 2,
+      schemaVersion: 3,
       createdAt: FieldValue.serverTimestamp(),
       });
     } catch (cause) {

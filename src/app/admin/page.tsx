@@ -49,7 +49,10 @@ export default function AdminPage() {
     const nextMonth = now.getMonth() === 11 ? 1 : now.getMonth() + 2;
     const birthdays = responses.filter(item => Number(item.birthDate?.slice(5, 7)) === nextMonth).length;
     const storeCounts = new Map<string, number>();
-    responses.forEach(item => storeCounts.set(item.store, (storeCounts.get(item.store) ?? 0) + 1));
+    responses.forEach(item => {
+      const storeLabel = item.store || (item.purchaseExperience === "no" ? "未購入" : item.purchaseExperience === "unknown" ? "購入経験不明" : "未設定");
+      storeCounts.set(storeLabel, (storeCounts.get(storeLabel) ?? 0) + 1);
+    });
     const stores = [...storeCounts.entries()].sort((a, b) => b[1] - a[1]);
     return { thisMonth, messages, birthdays, stores, topStore: stores[0] };
   }, [responses]);
